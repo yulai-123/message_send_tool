@@ -68,7 +68,6 @@ func (l *LarkMessage) SendMessage(messageData MessageData) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(requestBytes))
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(requestBytes))
 	if err != nil {
