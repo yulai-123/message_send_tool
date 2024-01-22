@@ -11,6 +11,7 @@ type MessageContent struct {
 	Content string
 	ImgList []string
 	Title   string
+	URL     string
 }
 
 /*

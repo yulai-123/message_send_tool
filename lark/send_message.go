@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	messageTemplate = `{"config": {"wide_screen_mode": true},"elements":[{"tag":"markdown","content":"{{.content}}"}{{range $k, $v := .imgList}},{"alt": {"content": "图片","tag": "plain_text"},"img_key": "{{$v}}","tag": "img"}{{end}}],"header": {"template": "blue","title": {"content": "{{.title}}","tag": "plain_text"}}}`
+	messageTemplate = `{"config": {"wide_screen_mode": true},"elements":[{"tag":"markdown","content":"{{.content}}"}{{range $k, $v := .imgList}},{"alt": {"content": "图片","tag": "plain_text"},"img_key": "{{$v}}","tag": "img"}{{end}}],"header": {"template": "blue","title": {"content": "{{.title}}","tag": "plain_text"}},"card_link": {"url": "{{.url}}","pc_url": "","android_url": "","ios_url": ""}}`
 )
 
 func (l *LarkMessage) parseMessage(data MessageData) (string, error) {
@@ -24,6 +24,7 @@ func (l *LarkMessage) parseMessage(data MessageData) (string, error) {
 	params["content"] = data.Content.Content
 	params["title"] = data.Content.Title
 	params["imgList"] = data.Content.ImgList
+	params["url"] = data.Content.URL
 
 	buffer := &bytes.Buffer{}
 	err = tmpl.Execute(buffer, params)
