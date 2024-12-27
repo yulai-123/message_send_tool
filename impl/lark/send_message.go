@@ -13,10 +13,10 @@ import (
 
 var (
 	// 消息发送的url，这里默认用了openID
-	oapiMessagesURL = `https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=open_id`
+	oapiMessagesURL = `https://open.feishu.cn/open-apis/im/v1/messages`
 
 	// 用于解析消息发送的模版
-	messageTemplate = `{"config": {"wide_screen_mode": true},"elements":[{"tag":"markdown","content":"{{.content}}"}{{range $k, $v := .imgList}},{"alt": {"content": "图片","tag": "plain_text"},"img_key": "{{$v}}","tag": "img"}{{end}}],"header": {"template": "blue","title": {"content": "{{.title}}","tag": "plain_text"}},"card_link": {"url": "{{.url}}","pc_url": "","android_url": "","ios_url": ""}}`
+	messageTemplate = `{"config": {"wide_screen_mode": true},"elements":[{"tag":"markdown","content":"{{.content}}"}{{range $k, $v := .imgList}},{"alt": {"content": "图片","tag": "plain_text"},"img_key": "{{$v}}","tag": "img", "scale_type": "crop_center", "size": "medium", "preview": true}{{end}}],"header": {"template": "blue","title": {"content": "{{.title}}","tag": "plain_text"}},"card_link": {"url": "{{.url}}","pc_url": "","android_url": "","ios_url": ""}}`
 )
 
 func (m *MessageHandler) sendMessage(message model.Message) error {
@@ -38,7 +38,12 @@ func (m *MessageHandler) sendMessage(message model.Message) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, oapiMessagesURL, bytes.NewReader(requestBytes))
+	if message.ReceiveIDType == "" {
+		message.ReceiveIDType = model.OpenID
+	}
+	messageURL := fmt.Sprintf("%s?receive_id_type=%s", oapiMessagesURL, message.ReceiveIDType)
+
+	req, err := http.NewRequest(http.MethodPost, messageURL, bytes.NewReader(requestBytes))
 	if err != nil {
 		return err
 	}
@@ -77,10 +82,19 @@ func (m *MessageHandler) parseMessage(message model.Message) (string, error) {
 		return "", err
 	}
 
+	imageKeyList := make([]string, 0)
+	for _, image := range message.ImageList {
+		imageKey, err := m.uploadImage(image)
+		if err != nil {
+			return "", err
+		}
+		imageKeyList = append(imageKeyList, imageKey)
+	}
+
 	params := make(map[string]interface{})
 	params["content"] = message.Content
 	params["title"] = message.Title
-	//todo params[] 这里需要补充图片的上传
+	params["imgList"] = imageKeyList
 	params["url"] = message.URL
 
 	buffer := &bytes.Buffer{}

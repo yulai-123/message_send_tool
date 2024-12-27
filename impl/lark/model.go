@@ -22,3 +22,16 @@ type getTenantAccessTokenResponse struct {
 	TenantAccessToken string `json:"tenant_access_token"`
 	Expire            int64  `json:"expire"`
 }
+
+type oapiImageRequest struct {
+	ImageType string `json:"image_type"`
+	Image     []byte `json:"image"`
+}
+
+type oapiImageResponse struct {
+	Code int `json:"code"`
+	Data struct {
+		ImageKey string `json:"image_key"`
+	} `json:"data"`
+	Msg string `json:"msg"`
+}
